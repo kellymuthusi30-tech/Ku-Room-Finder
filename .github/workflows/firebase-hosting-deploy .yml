@@ -1,0 +1,39 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      # 1. Authenticate with Google Cloud
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'ku-room-finder-d9d8e'
+          workload_identity_provider: 'projects/878452412464/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'github-deployer@ku-room-finder-d9d8e.iam.gserviceaccount.com'
+
+      # 2. Build Steps (Uncomment if you need to build your project)
+      # - name: Install and Build
+      #   run: npm ci && npm run build
+
+      # 3. Deploy to Firebase Hosting
+      - name: 'Deploy to Firebase Hosting'
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ steps.auth.outputs.credentials_json }}'
+          projectId: ku-room-finder-d9d8e
+          channelId: live
